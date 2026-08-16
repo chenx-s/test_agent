@@ -1,2 +1,18 @@
 print("1=2",1+2)
 print("Hello, World!")
+class MyClass:
+    def __init__(self, name):
+        self.name = name
+
+    def greet(self):
+        return f"Hello, {self.name}!"
+
+class AnotherClass:
+    def __init__(self, value):
+        self.value = value
+
+    def double(self):
+        return self.value * 2   
+
+my_object = MyClass("Alice")
+print(my_object.greet())
