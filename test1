@@ -16,3 +16,5 @@ class AnotherClass:
 
 my_object = MyClass("Alice")
 print(my_object.greet())
+my_another_object = AnotherClass(5)
+print(my_another_object.double())   
