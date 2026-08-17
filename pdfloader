@@ -1,0 +1,21 @@
+from langchain_community.document_loaders import PyMuPDFLoader
+from langchain_community.document_loaders.markdown import UnstructuredMarkdownLoader
+
+
+# 创建一个 PyMuPDFLoader Class 实例，输入为待加载的 pdf 文档路径
+loader = PyMuPDFLoader("D:/project/llm/test_agent/data_base/knowledge_db/pumkin_book/pumpkin_book.pdf")
+# loader = UnstructuredMarkdownLoader("D:/project/llm/test_agent/data_base/knowledge_db/prompt_engineering/1. 简介 Introduction.md")
+# 调用 PyMuPDFLoader Class 的函数 load 对 pdf 文件进行加载
+
+if __name__ == "__main__":
+    pdf_pages = loader.load()
+    print(f"载入后的变量类型为：{type(pdf_pages)}，",  f"该 PDF 一共包含 {len(pdf_pages)} 页")
+
+
+    pdf_page = pdf_pages[1]
+    print(f"每一个元素的类型：{type(pdf_page)}.", 
+        f"该文档的描述性数据：{pdf_page.metadata}", 
+        f"查看该文档的内容:\n{pdf_page.page_content}", 
+        sep="\n------\n")
+
+
