@@ -13,5 +13,4 @@ pymupdf==1.28.2
 numpy==1.26.4
 SQLAlchemy==2.0.52
 tqdm==4.70.0
-langchain-zhipu==4.1.8
 zhipuai==0.1.3
