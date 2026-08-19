@@ -9,6 +9,18 @@ import sys
 sys.path.append("D:\\project\\llm\\test_agent") # 将父目录放入系统路径中
 from zhipuai_embedding import ZhipuAIEmbeddings
 from langchain_community.vectorstores import Chroma
+from dotenv import load_dotenv, find_dotenv
+
+# 加载 .env 环境变量
+env_loaded = load_dotenv(find_dotenv())
+if not env_loaded:
+    print("警告：未找到 .env 文件，将尝试使用全局环境变量")
+
+# 读取 API Key 并做空值校验
+zhipuai_api_key = os.getenv("ZHIPUAI_API_KEY")
+if not zhipuai_api_key:
+    raise ValueError("ZHIPUAI_API_KEY 未配置，请检查 .env 文件或系统环境变量")
+
 def get_retriever():
     # 定义 Embeddings
     embedding = ZhipuAIEmbeddings()
@@ -20,16 +32,27 @@ def get_retriever():
         embedding_function=embedding
     )
     return vectordb.as_retriever()
+
+
 def combine_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs["context"])
+
+
+@st.cache_resource(show_spinner="正在初始化问答链...")
 def get_qa_history_chain():
     retriever = get_retriever()
-    llm = ChatZhipuAI(model="glm-4-plus", temperature=0.1)
+    # 使用OpenAI兼容方式调用GLM，替代langchain_zhipu
+    llm = ChatZhipuAI(
+        model="glm-4-plus",
+        temperature=0.1,
+        api_key=os.getenv("ZHIPUAI_API_KEY")
+    )
     condense_question_system_template = (
         "请根据聊天记录总结用户最近的问题，"
         "如果没有多余的聊天记录则返回用户的问题。"
     )
-    condense_question_prompt = ChatPromptTemplate([
+    # ✅ 修复这里：加上 .from_messages
+    condense_question_prompt = ChatPromptTemplate.from_messages([
             ("system", condense_question_system_template),
             ("placeholder", "{chat_history}"),
             ("human", "{input}"),
@@ -63,9 +86,11 @@ def get_qa_history_chain():
     )
 
     qa_history_chain = RunnablePassthrough().assign(
-        context = retrieve_docs, 
+        context = retrieve_docs,
         ).assign(answer=qa_chain)
     return qa_history_chain
+
+
 def gen_response(chain, input, chat_history):
     response = chain.stream({
         "input": input,
@@ -106,3 +131,9 @@ def main():
             output = st.write_stream(answer)
         # 将输出存入st.session_state.messages
         st.session_state.messages.append(("ai", output))
+
+
+
+# 增加程序入口
+if __name__ == "__main__":
+    main()
